@@ -34,6 +34,8 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
 
    implementation("com.amazonaws:aws-lambda-java-core:1.2.0")
+
+    compile("com.fasterxml.jackson.module:jackson-module-kotlin:2.8.2")
 }
 
 application {

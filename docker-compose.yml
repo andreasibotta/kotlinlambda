@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+  # Localstack is neat! Check out the docs here https://github.com/localstack/localstack
+  localstack:
+    image: localstack/localstack:0.11.1
+    ports:
+      - "4567-4583:4567-4583"
+      - "${PORT_WEB_UI-8090}:${PORT_WEB_UI-8080}"
+    environment:
+      - SERVICES=${SERVICES-sqs, sns,dynamodb, lambda }
+      - DEBUG=${DEBUG- }
+      - DATA_DIR=${DATA_DIR- }
+      - PORT_WEB_UI=${PORT_WEB_UI- }
+      - LAMBDA_EXECUTOR=${LAMBDA_EXECUTOR- }
+      - KINESIS_ERROR_PROBABILITY=${KINESIS_ERROR_PROBABILITY- }
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - HOSTNAME_EXTERNAL=localstack
+      - LAMBDA_EXECUTOR=docker
+    volumes:
+      - localstack-datavolume:/tmp/localstack
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
+volumes:
+  localstack-datavolume:
