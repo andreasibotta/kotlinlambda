@@ -2,7 +2,6 @@ package com.kotlinlambda
 
 import com.amazonaws.auth.AWSCredentialsProvider
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain
-import com.amazonaws.client.builder.AwsClientBuilder
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder
@@ -13,27 +12,25 @@ import com.amazonaws.services.dynamodbv2.model.*
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.RequestHandler
 import java.time.OffsetDateTime
-import java.util.*
 
-
-fun main(args: Array<String>) {
+fun main() {
     println("Hello World!")
     val app = App()
     app.createTable()
 }
 
 class App : RequestHandler<HandlerInput, HandlerOutput> {
-    val translator: PirateTranslator = DefaultPirateTranslator()
-
+    private val translator: PirateTranslator = DefaultPirateTranslator()
+    private var tableName: String = ""
 
     override fun handleRequest(input: HandlerInput?, context: Context?): HandlerOutput {
-        val response = createTable()
+        createTable()
         val response2 = putItem()
 
         input?.let {
             return HandlerOutput(it.message, translator.translate(it.message) + "-2-"  + "-" + response2)
         }
-        return HandlerOutput("", "");
+        return HandlerOutput("", "")
     }
 
     private fun getDdbClient(): DynamoDB {
@@ -52,7 +49,7 @@ class App : RequestHandler<HandlerInput, HandlerOutput> {
         val dynamoDB = getDdbClient()
 
         val now = OffsetDateTime.now()
-        val tableName = "Movies" //+ now.hour + now.minute + now.second
+        tableName = "Movies" + now.hour + now.minute + now.second
 
         try {
             s += ("Attempting to create table; please wait...")
@@ -72,12 +69,12 @@ class App : RequestHandler<HandlerInput, HandlerOutput> {
         return s
     }
 
-    fun putItem(): String {
+    private fun putItem(): String {
         var s=""
 
         val dynamoDB = getDdbClient()
 
-        val table = dynamoDB.getTable("Movies")
+        val table = dynamoDB.getTable(tableName)
 
         val year = 2015
         val title = "The Big New Movie"
