@@ -33,7 +33,8 @@ dependencies {
     // Use the Kotlin JUnit integration.
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
 
-   implementation("com.amazonaws:aws-lambda-java-core:1.2.0")
+    implementation("com.amazonaws:aws-lambda-java-core:1.2.0")
+    compile("com.amazonaws:aws-java-sdk-dynamodb:1.11.441")
 
     compile("com.fasterxml.jackson.module:jackson-module-kotlin:2.8.2")
 }

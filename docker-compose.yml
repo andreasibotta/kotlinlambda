@@ -3,6 +3,7 @@ version: '3'
 services:
   # Localstack is neat! Check out the docs here https://github.com/localstack/localstack
   localstack:
+    privileged: true
     image: localstack/localstack:0.11.1
     ports:
       - "4567-4583:4567-4583"
@@ -16,7 +17,7 @@ services:
       - KINESIS_ERROR_PROBABILITY=${KINESIS_ERROR_PROBABILITY- }
       - DOCKER_HOST=unix:///var/run/docker.sock
       - HOSTNAME_EXTERNAL=localstack
-      - LAMBDA_EXECUTOR=docker
+      - LAMBDA_EXECUTOR=local
     volumes:
       - localstack-datavolume:/tmp/localstack
       - "/var/run/docker.sock:/var/run/docker.sock"
