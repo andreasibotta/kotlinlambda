@@ -28,7 +28,7 @@ class App : RequestHandler<HandlerInput, HandlerOutput> {
         val response2 = putItem()
 
         input?.let {
-            return HandlerOutput(it.message, translator.translate(it.message) + "-2-"  + "-" + response2)
+            return HandlerOutput(it.message, translator.translate(it.message) + "-2-" + "-" + response2)
         }
         return HandlerOutput("", "")
     }
@@ -70,7 +70,7 @@ class App : RequestHandler<HandlerInput, HandlerOutput> {
     }
 
     private fun putItem(): String {
-        var s=""
+        var s = ""
 
         val dynamoDB = getDdbClient()
 
@@ -88,17 +88,12 @@ class App : RequestHandler<HandlerInput, HandlerOutput> {
             val outcome = table.putItem(Item()
                 .withPrimaryKey("year", year, "title", title)
                 .withMap("info", infoMap))
-
-            s += ("""
-    PutItem succeeded:
-    ${outcome.putItemResult}
-    """.trimIndent())
+            s += ("""PutItem succeeded: ${outcome.putItemResult}""".trimIndent())
         } catch (e: java.lang.Exception) {
             s += ("Unable to add item: $year $title")
             s += (e.message)
         }
 
         return s
-
     }
 }
