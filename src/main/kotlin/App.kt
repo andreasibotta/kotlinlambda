@@ -1,18 +1,19 @@
 package com.kotlinlambda
 
 import com.amazonaws.auth.AWSCredentialsProvider
-import com.amazonaws.auth.AWSStaticCredentialsProvider
-import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain
 import com.amazonaws.client.builder.AwsClientBuilder
+import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder
 import com.amazonaws.services.dynamodbv2.document.DynamoDB
+import com.amazonaws.services.dynamodbv2.document.Item
 import com.amazonaws.services.dynamodbv2.document.Table
 import com.amazonaws.services.dynamodbv2.model.*
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.RequestHandler
 import java.time.OffsetDateTime
+import java.util.*
 
 
 fun main(args: Array<String>) {
@@ -27,34 +28,31 @@ class App : RequestHandler<HandlerInput, HandlerOutput> {
 
     override fun handleRequest(input: HandlerInput?, context: Context?): HandlerOutput {
         val response = createTable()
+        val response2 = putItem()
+
         input?.let {
-            return HandlerOutput(it.message, translator.translate(it.message) + "-2-" + response)
+            return HandlerOutput(it.message, translator.translate(it.message) + "-2-"  + "-" + response2)
         }
         return HandlerOutput("", "");
     }
 
-    fun createTable(): String {
-        var s = ""
-        val provider: AWSCredentialsProvider =
-//            try {
-//                DefaultAWSCredentialsProviderChain()
-//            } catch (e: Exception) {
-//                println("No default AWS credentials")
-                AWSStaticCredentialsProvider(BasicAWSCredentials("localstack", "localstack")) // TODO: Fix
-//            }
-        s+=("proivder")
-        s+=(provider)
-        s+=(provider.credentials.awsSecretKey)
+    private fun getDdbClient(): DynamoDB {
+        val provider: AWSCredentialsProvider = DefaultAWSCredentialsProviderChain()
         val client: AmazonDynamoDB = AmazonDynamoDBClientBuilder.standard()
-            .withEndpointConfiguration(AwsClientBuilder.EndpointConfiguration("http://localstack:4569", "us-east-1"))
-//            .withRegion("us-east-1")
+            .withEndpointConfiguration(EndpointConfiguration("http://localstack:4569", "us-east-1"))
             .withCredentials(provider)
             .build()
 
-        val dynamoDB = DynamoDB(client)
+        return DynamoDB(client)
+    }
+
+    fun createTable(): String {
+        var s = ""
+
+        val dynamoDB = getDdbClient()
 
         val now = OffsetDateTime.now()
-        val tableName = "Movies" + now.hour + now.minute + now.second
+        val tableName = "Movies" //+ now.hour + now.minute + now.second
 
         try {
             s += ("Attempting to create table; please wait...")
@@ -72,5 +70,38 @@ class App : RequestHandler<HandlerInput, HandlerOutput> {
         }
 
         return s
+    }
+
+    fun putItem(): String {
+        var s=""
+
+        val dynamoDB = getDdbClient()
+
+        val table = dynamoDB.getTable("Movies")
+
+        val year = 2015
+        val title = "The Big New Movie"
+
+        val infoMap: MutableMap<String, Any?> = HashMap()
+        infoMap["plot"] = "Nothing happens at all."
+        infoMap["rating"] = 0
+
+        try {
+            s += ("Adding a new item...")
+            val outcome = table.putItem(Item()
+                .withPrimaryKey("year", year, "title", title)
+                .withMap("info", infoMap))
+
+            s += ("""
+    PutItem succeeded:
+    ${outcome.putItemResult}
+    """.trimIndent())
+        } catch (e: java.lang.Exception) {
+            s += ("Unable to add item: $year $title")
+            s += (e.message)
+        }
+
+        return s
+
     }
 }
